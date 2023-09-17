@@ -7,17 +7,6 @@ data = data.sort_values(by=['Symbol', 'Date'])
 ## Add 5 day percent change
 data['Weekly %Change'] = data.groupby('Symbol')['Close'].pct_change(periods=5) * 100
 
-# ## Create Target Variable
-# sp500_weekly_change = data[data['Symbol'] == '^GSPC']['Weekly %Change']
-
-# sp500_change_map = dict(zip(data[data['Symbol'] == '^GSPC']['Date'], sp500_weekly_change))
-
-# data['SP500 Weekly %Change'] = data['Date'].map(sp500_change_map)
-
-# data['Outpreform_SP500'] = (data['Weekly %Change'] > data['SP500 Weekly %Change']).astype(int)
-
-# data['Target Next Week'] = data.groupby('Symbol')['Outpreform_SP500'].shift(-5) # Target Variable
-
 ## Feature Engineering
 # 5-day and 10-day moving averages
 data['5-day MA'] = data.groupby('Symbol')['Close'].transform(lambda x: x.rolling(window=5).mean())
@@ -82,7 +71,7 @@ data['Date'] = pd.to_datetime(data['Date'])
 data['Day_of_Week'] = data['Date'].dt.dayofweek
 
 # Calculate the 5-day percentage change using Open of the current day and Close 5 days later
-data['Close_5_Days_Later'] = data.groupby('Symbol')['Close'].shift(-5)
+data['Close_5_Days_Later'] = data.groupby('Symbol')['Close'].shift(-4)
 data['5_Day_%Change'] = ((data['Close_5_Days_Later'] - data['Open']) / data['Open']) * 100
 
 # Extracting the 5-day percentage change for ^GSPC
@@ -92,25 +81,26 @@ sp500_5_day_change = data[data['Symbol'] == '^GSPC'][['Date', '5_Day_%Change']].
 final_data_5_day = pd.merge(data, sp500_5_day_change, on='Date', how='left')
 
 # Determine if the stock outperformed ^GSPC over 5 days
-final_data_5_day['Outperformed'] = final_data_5_day['5_Day_%Change'] > final_data_5_day['SP500_5_Day_%Change']
+final_data_5_day['Outperformed'] = np.where(
+    (final_data_5_day['5_Day_%Change'].isna()) | (final_data_5_day['SP500_5_Day_%Change'].isna()),
+    np.nan,
+    final_data_5_day['5_Day_%Change'] > final_data_5_day['SP500_5_Day_%Change']
+)
 
 # Shift the 'Outperformed' column back by one day to create 'Outperformed_Predicted_Next_Week' before filtering by Friday
-final_data_5_day['Outperformed_Predicted_Next_Week'] = final_data_5_day.groupby('Symbol')['Outperformed'].shift(1)
+final_data_5_day['Outperformed_Predicted_Next_Week'] = final_data_5_day.groupby('Symbol')['Outperformed'].shift(-1)
 
 # Filter the data to only include rows corresponding to Fridays
 friday_data_with_prediction = final_data_5_day[final_data_5_day['Day_of_Week'] == 4]
-
-# Set the 'Outperformed_Predicted_Next_Week' column to NaN for the last Friday of each stock
-last_fridays_with_prediction = friday_data_with_prediction.groupby('Symbol').tail(1).index
-friday_data_with_prediction.loc[last_fridays_with_prediction, 'Outperformed_Predicted_Next_Week'] = np.nan
-
+friday_data_with_prediction
 
 # Elimnate stocks with Rolling 5-day Outperform<=3
+perfomance_threshold = 3
 latest_date = friday_data_with_prediction['Date'].max()
-stocks_to_exclude_5day = friday_data_with_prediction[(friday_data_with_prediction['Date'] == latest_date) & (friday_data_with_prediction['Rolling 5-day Outperform'] <= 3.5)]['Symbol'].unique()
+stocks_to_exclude_5day = friday_data_with_prediction[(friday_data_with_prediction['Date'] == latest_date) & (friday_data_with_prediction['Rolling 5-day Outperform'] <= perfomance_threshold)]['Symbol'].unique()
 eliminated_df = friday_data_with_prediction[~friday_data_with_prediction['Symbol'].isin(stocks_to_exclude_5day)]
 
-eliminated_df['Outperformed'] = eliminated_df['Outperformed'].astype(int)
-eliminated_df['Outperformed_Predicted_Next_Week'] = eliminated_df['Outperformed_Predicted_Next_Week'].astype(bool).astype(int)
+eliminated_df['Outperformed'] = eliminated_df['Outperformed'].astype(int, errors='ignore')
+eliminated_df['Outperformed_Predicted_Next_Week'] = eliminated_df['Outperformed_Predicted_Next_Week'].astype(int,errors='ignore')
 
 eliminated_df.to_csv('data/stock_data_cleaned.csv', index=False)
