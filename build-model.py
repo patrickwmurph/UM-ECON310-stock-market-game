@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
@@ -7,6 +7,9 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import VotingClassifier
+from sklearn.preprocessing import StandardScaler
+
+
 
 data = pd.read_csv('data/stock_data_cleaned.csv')
 
@@ -46,6 +49,7 @@ sorted_features_df.reset_index(drop=True, inplace=True)
 
 features = sorted_features_df['Feature'].head(23)
 
+
 # Model Selection
 
 X_train_top = X_train[features]
@@ -70,6 +74,58 @@ for name, clf in classifiers.items():
     roc_auc_scores[name] = roc_auc
 
 roc_auc_scores
+
+## Hyperparameter Tuning
+X = data[features]
+y = data['Outperformed_Predicted_Next_Week']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+
+param_grid_lr = {
+    'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+    'penalty': ['l1', 'l2'],
+    'solver': ['liblinear']
+}
+
+# Logistic Regression
+grid_search_lr = GridSearchCV(
+    estimator=LogisticRegression(max_iter=10000, random_state=1),
+    param_grid=param_grid_lr,
+    scoring='roc_auc',
+    cv=5,
+    n_jobs=-1
+)
+
+grid_search_lr.fit(X_train_scaled, y_train)
+print(grid_search_lr.best_params_)
+
+# Gradient Boosting
+param_grid_gb = {
+    'n_estimators': [50, 100, 200],
+    'learning_rate': [0.001, 0.01, 0.1, 1],
+    'max_depth': [3, 5, 7, 10],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'subsample': [0.8, 0.9, 1.0]
+}
+
+# Initialize the RandomizedSearchCV for Gradient Boosting
+random_search_gb = RandomizedSearchCV(
+    estimator=GradientBoostingClassifier(random_state=1),
+    param_distributions=param_grid_gb,
+    n_iter=20,
+    scoring='roc_auc',
+    cv=5,
+    n_jobs=-1,
+    random_state=42
+)
+
+# Fit the randomized search on the training data
+random_search_gb.fit(X_train_scaled, y_train)
+
+print(random_search_gb.best_params_)
 
 # Create Voting Model
 data.dropna(subset=features, inplace=True)

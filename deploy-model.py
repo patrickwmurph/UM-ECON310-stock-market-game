@@ -5,7 +5,6 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import VotingClassifier
 
@@ -68,9 +67,19 @@ X_test = test[features]
 y_test = test[target].values.ravel()
 
 classifiers = {
-    "Logistic Regression": LogisticRegression(max_iter=10000, random_state=1),
+    "Logistic Regression": LogisticRegression(C=0.1, 
+                                              penalty = 'l1', 
+                                              solver = 'liblinear',
+                                              max_iter=10000, 
+                                              random_state=1),
     "Calibrated SVM (CCV)": CalibratedClassifierCV(estimator=SVC(probability=True), method='isotonic', cv=3),
-    "Gradient Boosting": GradientBoostingClassifier(random_state=1),
+    "Gradient Boosting": GradientBoostingClassifier(subsample = 0.9, 
+                                                    n_estimators=200, 
+                                                    min_samples_split=2, 
+                                                    min_samples_leaf=4,
+                                                    max_depth=10,
+                                                    learning_rate=0.01,
+                                                    random_state=1),
 }
 
 voting_clf = VotingClassifier(estimators=list(classifiers.items()), voting='soft')
@@ -84,7 +93,7 @@ results_df = test.copy()
 
 results_df['Predicted'] = predicted
 
-results_df.to_csv(f'Stock Predictions/{last_friday}results.csv')
+results_df.sort_values('Predicted', ascending=False).to_csv(f'Stock Predictions/{last_friday}results.csv')
 
 top_pick = results_df[results_df.groupby('Date')['Predicted'].transform(max) == results_df['Predicted']]['Symbol']
 
