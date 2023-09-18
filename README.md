@@ -8,7 +8,7 @@ $$
 \%\Delta=\frac{\$Open_{monday}-\$Close_{friday}}{\$Open_{monday}}\cdot 100\%
 $$
 
-**Win criteria**: If the $\%\Delta$ of the selected stock exceeds that of the SP500, as measured by the SPX index, you have won on a given week.
+**Win criteria**: If the $\Delta$ of the selected stock exceeds that of the SP500, as measured by the SPX index, you have won on a given week.
 
 ## Data
 All data comes from yfinance and the model was trained each week from data on 2020-01-01 to the Friday prior to the Monday where predictions are entered.
