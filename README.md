@@ -41,7 +41,7 @@ Data cleaning, feature engineering, and data preprocessing was done prior to mod
 <center>NOTE: In the dataset the SPX is considered is treated as a stock with the symbol <b>^GSPC</b></center>
 <br>
 
-**Target**: *Outpreformed_Predicted_Next_Week* is the target column. This represents a shift of the Outperformed column back one date where the market is open (ie Monday $\rightarrow$ previous Friday). The outpreformed column on a given date represents the $\%\Delta$ between the Open price on the current day and the Close price 4 days later. 
+**Target**: *Outpreformed_Predicted_Next_Week* is the target column. This represents a shift of the Outperformed column back one date where the market is open (ie Monday $\rightarrow$ previous Friday). The outpreformed column on a given date represents the $\\%\Delta$ between the Open price on the current day and the Close price 4 days later. 
 
 The reason for the shift on the outperformed columns is because teh model most consider only data up to and including the previous Friday, and what is happening on the current monday is unknown. This way the result is shifted from the following Monday to the current Friday when the model is being tested. 
 
