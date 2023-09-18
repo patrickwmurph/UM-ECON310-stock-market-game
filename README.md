@@ -4,7 +4,9 @@ Machine Learning model to pick stocks for the Stock Market game in ECON 310 at U
 ## Game Criteria
 Pick a stock on Monday 9:30am that will outperform the SP500 for the coming week, Monday Open through Friday Close. The change is measured by the percent change calculated as follows:
 
-$\%\Delta=\frac{\$Open_{monday}-\$Close_{friday}}{\$Open_{monday}}\cdot 100\%$
+$$
+\%\Delta=\frac{\$Open_{monday}-\$Close_{friday}}{\$Open_{monday}}\cdot 100\%
+$$
 
 **Win criteria**: If the $\%\Delta$ of the selected stock exceeds that of the SP500, as measured by the SPX index, you have won on a given week.
 
