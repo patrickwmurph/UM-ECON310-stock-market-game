@@ -20,8 +20,8 @@ data = data.drop(rows_with_inf)
 feature_data = data.dropna()
 
 X = feature_data.drop(columns=['Outperformed_Predicted_Next_Week', 'Date', 'Symbol',
-                       'Close_5_Days_Later', '5_Day_%Change', 'SP500_5_Day_%Change', 
-                       'Outperformed', 'Day_of_Week'])  
+                       'Monday Open', '%Change', '%Change_SP500', 
+                       'Day_of_Week'])  
 
 y = feature_data['Outperformed_Predicted_Next_Week']
 
@@ -93,8 +93,4 @@ results_df = test.copy()
 
 results_df['Predicted'] = predicted
 
-results_df.sort_values('Predicted', ascending=False).to_csv(f'Stock Predictions/{last_friday}results.csv')
-
-top_pick = results_df[results_df.groupby('Date')['Predicted'].transform(max) == results_df['Predicted']]['Symbol']
-
-print(f'This weeks pick is {top_pick}')
+results_df.sort_values('Predicted', ascending=False, inplace=True)
