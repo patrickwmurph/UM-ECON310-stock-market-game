@@ -94,3 +94,5 @@ results_df = test.copy()
 results_df['Predicted'] = predicted
 
 results_df.sort_values('Predicted', ascending=False, inplace=True)
+
+results_df.to_csv(f'Stock Predictions/{last_friday}results.csv', index=False)
