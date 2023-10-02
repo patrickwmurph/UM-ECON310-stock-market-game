@@ -49,7 +49,7 @@ Data cleaning, feature engineering, and data preprocessing was done prior to mod
 
 **Target**: *Outpreformed_Predicted_Next_Week* is the target column. This represents a shift of the Outperformed column back one date where the market is open (ie Monday $\rightarrow$ previous Friday). The outpreformed column on a given date is a binary that represents if $\\%\Delta_{stock}>\\%\Delta_{SP500}$ where $\\%\Delta$ is between the Open price on the current day and the Close price 4 days later. 
 
-The reason for the shift on the outperformed columns is because teh model most consider only data up to and including the previous Friday, and what is happening on the current monday is unknown. This way the result is shifted from the following Monday to the current Friday when the model is being tested. 
+The reason for the shift on the outperformed columns is because the model most consider only data up to and including the previous Friday, and what is happening on the current monday is unknown. This way the result is shifted from the following Monday to the current Friday when the model is being tested. 
 
 ### Preprocessing
 The first step in preprocessing was dropping all non-friday's from the dataset. This was done because we are making the prediction based on Friday data for the upcoming week.
